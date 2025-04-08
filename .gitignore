@@ -1,0 +1,9 @@
+# production
+build
+
+# dependencies
+node_modules
+
+# Environment variables
+.env
+*.env.local
