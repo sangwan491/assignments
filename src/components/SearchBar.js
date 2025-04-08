@@ -5,16 +5,14 @@ export default function SearchBar({value, setValue}){
         setValue(e.target.value);
     }
     return (
-        <div className="search-bar-container">
-            <div className="search-input-wrapper">
-                <i className="fa-solid fa-magnifying-glass search-icon"></i>
-                <input 
-                    className="search-input" 
-                    placeholder="Search by employee name/id..." 
-                    value={value} 
-                    onChange={handleChange}
-                />
-            </div>
-        </div>
+        <section className="search-bar">
+            <i className="fa-solid fa-magnifying-glass search-icon"></i>
+            <input 
+                className="search-input" 
+                placeholder="Search by employee name/id..." 
+                value={value} 
+                onChange={handleChange}
+            />
+        </section>
     );
 }

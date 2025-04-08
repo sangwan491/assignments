@@ -158,12 +158,12 @@ function App() {
   });
 
   return (
-    <div className="app">      
-      <div className='header'>
+    <>      
+      <header>
         Employee Management
-      </div>
+      </header>
       
-      <div className="app-content">
+      <main className="app-content">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -206,8 +206,8 @@ function App() {
             isLoading={isLoading}
           />
         )}
-      </div>
-    </div>
+      </main>
+    </>
   );
 }
 

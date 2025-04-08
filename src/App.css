@@ -1,6 +1,7 @@
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 body {
   font-family: 'Roboto', sans-serif;
@@ -11,15 +12,14 @@ textarea:focus,
 input:focus {
   outline: none;
 }
-.header {
+header {
   background-color: blueviolet;
-  height: 52px;
+  height: 5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: x-large;
-  padding: 12px;
 }
 .app-content {
   padding: 20px;
@@ -68,13 +68,9 @@ input:focus {
   width: 64px;
   font-weight: bold;
 }
-.search-bar-container {
-  margin-top: 16px;
-  margin-bottom: 40px;
-}
-.search-input-wrapper {
+.search-bar {
   color: black;
-  width: 20rem;
+  width: 22rem;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -82,6 +78,8 @@ input:focus {
   border: 2px solid blueviolet;
   border-radius: 0.75rem;
   padding: 0.5rem;
+  margin-top: 16px;
+  margin-bottom: 40px;
 }
 .search-input {
   flex-grow: 1;
@@ -92,6 +90,21 @@ input:focus {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+.employee-item {
+  width: 60%;
+  max-width: 28rem;
+  min-width: 22rem;
+  padding: 24px;
+  background-color: blueviolet;
+  border-radius: 8px;
+  color: white;
+}
+.employee-item input {
+  border: none;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
 }
 .employee-header {
   display: flex;
@@ -112,20 +125,6 @@ input:focus {
   color: blueviolet;
   padding: 6px;
   font-size: 14px;
-}
-.employee-item {
-  width: 100%;
-  max-width: 360px;
-  padding: 24px;
-  background-color: blueviolet;
-  border-radius: 8px;
-  color: white;
-}
-.employee-item input {
-  border: none;
-  background-color: transparent;
-  color: inherit;
-  font: inherit;
 }
 .employee-details {
   display: flex;

@@ -8,12 +8,6 @@ const EmployeeForm = ({ employees, setEmployees, onSave, onCancel }) => {
     department: ''
   });
 
-  // useEffect(() => {
-  //   if (employee) {
-  //     setFormData(employee);
-  //   }
-  // }, [employee]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -21,7 +15,7 @@ const EmployeeForm = ({ employees, setEmployees, onSave, onCancel }) => {
 
   return (
     <form className="employee-form">
-      <div className="form-group">
+      <section className="form-group">
         <label>Name:</label>
         <input
           type="text"
@@ -30,9 +24,9 @@ const EmployeeForm = ({ employees, setEmployees, onSave, onCancel }) => {
           onChange={handleChange}
           required
         />
-      </div>
+      </section>
       
-      <div className="form-group">
+      <section className="form-group">
         <label>Email:</label>
         <input
           type="email"
@@ -41,9 +35,9 @@ const EmployeeForm = ({ employees, setEmployees, onSave, onCancel }) => {
           onChange={handleChange}
           required
         />
-      </div>
+      </section>
       
-      <div className="form-group">
+      <section className="form-group">
         <label>Phone:</label>
         <input
           type="tel"
@@ -52,9 +46,9 @@ const EmployeeForm = ({ employees, setEmployees, onSave, onCancel }) => {
           onChange={handleChange}
           required
         />
-      </div>
+      </section>
       
-      <div className="form-group">
+      <section className="form-group">
         <label>Department:</label>
         <input
           type="text"
@@ -63,12 +57,12 @@ const EmployeeForm = ({ employees, setEmployees, onSave, onCancel }) => {
           onChange={handleChange}
           required
         />
-      </div>
+      </section>
       
-      <div className="form-actions">
+      <section className="form-actions">
         <button type="button" onClick={() => onSave(formData)}>Save</button>
         <button type="button" onClick={onCancel}>Cancel</button>
-      </div>
+      </section>
     </form>
   );
 };

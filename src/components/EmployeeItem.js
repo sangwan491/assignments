@@ -28,7 +28,7 @@ const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
   }, [employee]);
 
   return (
-    <div className="employee-item">
+    <section className="employee-item">
       <div className="employee-header">
         <input
           type="text"
@@ -38,7 +38,7 @@ const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
           disabled={!isEditing}
       
         />
-        <div className="employee-actions">
+        <section className="employee-actions">
           {isEditing ? (
             <>
               <button className="btn-save" onClick={handleSave}>
@@ -68,11 +68,11 @@ const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
             </>
           )
         }
-        </div>
+        </section>
       </div>
       <hr />
-      <div className="employee-details">
-        <div className="detail-item">
+      <section className="employee-details">
+        <section className="detail-item">
           <i className="fa-solid fa-envelope"></i>
           <span className="label">Email:</span>
           <input 
@@ -82,8 +82,8 @@ const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
             onChange={handleChange}
             disabled={!isEditing}
           />
-        </div>
-        <div className="detail-item">
+        </section>
+        <section className="detail-item">
           <i className="fa-solid fa-phone"></i>
           <span className="label">Phone:</span>
           <input 
@@ -93,8 +93,8 @@ const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
             onChange={handleChange}
             disabled={!isEditing}
           />
-        </div>
-        <div className="detail-item">
+        </section>
+        <section className="detail-item">
           <i className="fa-solid fa-user"></i>
           <span className="label">Department:</span>
           <input 
@@ -104,9 +104,9 @@ const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
             onChange={handleChange}
             disabled={!isEditing}
           />
-        </div>
-      </div>
-    </div>
+        </section>
+      </section>
+    </section>
   );
 };
 
