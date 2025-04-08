@@ -1,50 +1,46 @@
 @primary-color: blueviolet;
 @white: white;
 @border-color: blueviolet;
-@header-height: 52px;
 
 * {
   margin: 0;
-  padding: 0;
+  padding: 0;  
+}
+
+.app-content {
+  textarea, input {
+    &:focus {
+      outline: none;
+    }
+  }
+
+  button {
+    border: none;
+    background-color: @primary-color;
+    font-family: 'Roboto', sans-serif;
+    color: @white;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+  
+  font-family: 'Roboto', sans-serif;
+  padding: 20px;
+  color: @white;
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Roboto', sans-serif;
-  margin: 0;
-  color: @white;
-}
-
-textarea, input {
-  &:focus {
-    outline: none;
-  }
-}
-
 header {
+  font-family: 'Roboto', sans-serif;
   background-color: @primary-color;
-  height: @header-height;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: x-large;
-  padding: 12px;
+  color: @white;
 }
-
-.app-content {
-    padding: 20px;
-  
-    button {
-      border: none;
-      background-color: @primary-color;
-      font-family: 'Roboto', sans-serif;
-      color: @white;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 700;
-    }
-  }
 
 .employee-form {
     background: @primary-color;
