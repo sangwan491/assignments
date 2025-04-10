@@ -5,9 +5,14 @@
 * {
   margin: 0;
   padding: 0;  
+  box-sizing: border-box;
 }
 
 .app-content {
+  input {
+    min-width: 0;
+  }
+  
   textarea, input {
     &:focus {
       outline: none;
@@ -47,7 +52,8 @@ header {
     padding: 20px;
     border-radius: 5px;
     margin: 20px auto;
-    width: 325px;
+    max-width: 26rem;
+    min-width: 16rem;
 }
 
 .form-group {
@@ -84,17 +90,16 @@ header {
 }
 
 .search-bar{
-    color: black;
-    width: 20rem;
-    margin: 0 auto;
     display: flex;
-    align-items: center;
     gap: 0.5rem;
+    align-items: center;
+    max-width: 26rem;
+    min-width: 16rem;
+    margin: 10px auto 40px auto;
+    padding: 0.5rem;
     border: 2px solid @border-color;
     border-radius: 0.75rem;
-    padding: 0.5rem;
-    margin-top: 16px;
-    margin-bottom: 40px;
+    color: @primary-color;
 }
 
 .search-input {
@@ -102,22 +107,15 @@ header {
     border: none;
 }
 
-.employee-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
 .employee-item {
-  width: 60%;
-  max-width: 360px;
-  min-width: 200px;
+  max-width: 26rem;
+  min-width: 16rem;
+  margin: 0 auto 16px auto;
   padding: 24px;
-  background-color: @primary-color;
   border-radius: 8px;
+  background-color: @primary-color;
   color: @white;
-
+  
   input {
     border: none;
     background-color: transparent;
