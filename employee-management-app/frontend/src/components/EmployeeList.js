@@ -5,7 +5,7 @@ const EmployeeList = ({ employees, onUpdate, onDelete }) => {
   console.log(employees);
 
   return (
-    <div className="employee-list">
+    <section className="employee-list">
       {employees.length === 0 ? (
         <span className="no-employees-found">No employees found. Add a new employee to get started.</span>
       ) : (
@@ -18,7 +18,7 @@ const EmployeeList = ({ employees, onUpdate, onDelete }) => {
           />
         ))
       )}
-    </div>
+    </section>
   );
 };
 
