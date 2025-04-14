@@ -2,8 +2,6 @@ import React from 'react';
 import EmployeeItem from './EmployeeItem';
 
 const EmployeeList = ({ employees, onUpdate, onDelete }) => {
-  console.log(employees);
-
   return (
     <section className="employee-list">
       {employees.length === 0 ? (
