@@ -51,10 +51,10 @@ const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
           ) : isDeleting ? (
             <>
               <button className="btn-confirm" onClick={() => onDelete(employee.id)}>
-                <i class="fa-solid fa-check"></i>
+                <i className="fa-solid fa-check"></i>
               </button>
               <button className="btn-cancel" onClick={() => setIsDeleting(false)}>
-                <i class="fa-solid fa-xmark"></i>
+                <i className="fa-solid fa-xmark"></i>
               </button>
             </>
           ) : (
