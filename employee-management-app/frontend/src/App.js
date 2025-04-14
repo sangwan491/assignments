@@ -59,6 +59,8 @@ function App() {
         throw new Error(jsonResponse.error);
       }
 
+      newEmployee = jsonResponse.data;
+
       setEmployees((prevEmployees) => [...prevEmployees, newEmployee]);
       
       toast.success(jsonResponse.message);
@@ -93,10 +95,10 @@ function App() {
       if (!response.ok) {
         throw new Error(jsonResponse.error);
       }
-      
+
       setEmployees((prevEmployees) => {
         return prevEmployees.map(employee => 
-          employee.id === updatedEmployee.id ? updatedEmployee : employee
+          employee.id === updatedEmployee.id ? updatedEmployee: employee
         );
       });
 
@@ -196,10 +198,10 @@ function App() {
         
         <SearchBar value={value} setValue={setValue} />
         
-        {isLoading && !isAdding ? (
-          <div className="loading">Loading employees...</div>
+        {isLoading? (
+          <span className="loading">Loading employees...</span>
         ) : (
-          <EmployeeList 
+          <EmployeeList
             employees={filteredEmployees}
             onUpdate={onUpdate}
             onDelete={onDelete}

@@ -7,7 +7,7 @@ const EmployeeList = ({ employees, onUpdate, onDelete }) => {
   return (
     <div className="employee-list">
       {employees.length === 0 ? (
-        <p>No employees found. Add a new employee to get started.</p>
+        <span className="no-employees-found">No employees found. Add a new employee to get started.</span>
       ) : (
         employees.map(employee => (
           <EmployeeItem
