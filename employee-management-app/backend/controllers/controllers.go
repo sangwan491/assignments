@@ -52,7 +52,7 @@ func ConnectToMongoDB() error {
 	}
 
 	// Check the connection
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	err = client.Ping(ctx, nil)
@@ -134,13 +134,19 @@ func CreateEmployee(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := insertOneEmployee(employee); err != nil {
+	employeeID, err := insertOneEmployee(employee)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": fmt.Sprintf("Failed to insert employee: %v", err)})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"message": "Employee created successfully"})
+	employee.ID = employeeID // Set the ID in the employee model
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Employee created successfully",
+		"data":    employee,
+	})
 }
 
 // UpdateEmployee - HTTP handler to update an employee
@@ -191,13 +197,14 @@ func DeleteEmployee(w http.ResponseWriter, r *http.Request) {
 }
 
 // insertOneEmployee inserts an employee into the database and returns an error if any.
-func insertOneEmployee(employee models.Employee) error {
+func insertOneEmployee(employee models.Employee) (bson.ObjectID, error) {
 	result, err := collection.InsertOne(context.Background(), employee)
 	if err != nil {
-		return fmt.Errorf("error inserting employee: %w", err)
+		return bson.NilObjectID, fmt.Errorf("error inserting employee: %w", err)
 	}
 	fmt.Println("Inserted 1 employee with id:", result.InsertedID)
-	return nil
+
+	return result.InsertedID.(bson.ObjectID), nil // Return the inserted ID
 }
 
 // updateOneEmployee updates an employee document in the database and returns an error if any.
@@ -245,7 +252,7 @@ func getAllEmployees() ([]models.Employee, error) {
 		return nil, fmt.Errorf("error finding employees: %w", err)
 	}
 
-	var employees []models.Employee
+	employees := []models.Employee{}
 	for cur.Next(context.Background()) {
 		var employee models.Employee
 		if err := cur.Decode(&employee); err != nil {
