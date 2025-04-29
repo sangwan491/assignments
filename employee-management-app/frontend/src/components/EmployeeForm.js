@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-const EmployeeForm = ({ employees, setEmployees, onSave, onCancel }) => {
+const EmployeeForm = ({ employees, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    department: ''
+    department: '',
   });
 
   const handleChange = (e) => {
@@ -57,6 +57,22 @@ const EmployeeForm = ({ employees, setEmployees, onSave, onCancel }) => {
           onChange={handleChange}
           required
         />
+      </section>
+      
+      <section className="form-group">
+        <label>Manager:</label>
+        <select
+          name="manager"
+          value={formData.manager}
+          onChange={handleChange}
+        >
+          <option value="">No Manager</option>
+          {employees.map(employee => (
+            <option key={employee.id} value={employee.id}>
+              {employee.name}
+            </option>
+          ))}
+        </select>
       </section>
       
       <section className="form-actions">

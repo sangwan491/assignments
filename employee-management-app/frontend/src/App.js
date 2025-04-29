@@ -1,45 +1,97 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import SearchBar from './components/SearchBar';
 import EmployeeForm from './components/EmployeeForm';
 import EmployeeList from './components/EmployeeList';
+import Pagination from './components/Pagination';
 import './App.css';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 function App() {
-  const [value, setValue] = useState("");
   const [isAdding, setAdding] = useState(false);
-  const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  // const [searchType, setSearchType] = useState("employee");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [employeePages, setEmployeesPages] = useState({});
+  const [fetchKey, setFetchKey] = useState(0);
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
+  const fetchUrl = useMemo(() => {
+    return `${API_BASE_URL}/employees/search?term=${searchTerm}&page=${currentPage}`;
+  }, [currentPage, searchTerm]);
 
-  const fetchEmployees = async () => {
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/employees`);
-      
-      const jsonResponse = await response.json();
+  const employees = useMemo(() => {
+    return employeePages[currentPage] || [];
+  }, [currentPage, employeePages]);
 
-      if (!response.ok) {
-        throw new Error(jsonResponse.error);
-      }
-      
-      setEmployees(jsonResponse);
-    } catch (err) {
-      console.log(err);
-      toast.error(`Failed to load employees: ${err.message}`);
-    } finally {
-      setIsLoading(false);
+  const pagesArray = useMemo(() => {
+    if (!totalPages) {
+      return [];
     }
-  };
 
+    let start, end;
+    if (totalPages <= 5) {
+      start = 1;
+      end = totalPages;
+    } else {
+      if (currentPage <= 3) {
+        start = 1;
+        end = 5;
+      } else if (currentPage >= totalPages - 2) {
+        start = totalPages - 4;
+        end = totalPages;
+      } else {
+        start = currentPage - 2;
+        end = currentPage + 2;
+      }
+    }
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  }, [currentPage, totalPages]);
+
+  const handleSearch = useCallback(async () => {
+    setIsLoading(true);
+
+      try {
+        const response = await fetch(fetchUrl);
+        const jsonResponse = await response.json();
+  
+        if (!response.ok) {
+          throw new Error(jsonResponse.error || `Search failed with status: ${response.status}`);
+        }
+  
+        const results = jsonResponse.employees;
+
+        const pages = jsonResponse.pages;
+  
+        setTotalPages(pages);
+        setEmployeesPages(prevPages => ({
+          ...prevPages,
+          [currentPage]: results 
+        }));
+      } catch (err) {
+        console.error('Search error:', err);
+        toast.error(`Search failed: ${err.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+  }, [employeePages, fetchUrl]);
+
+  const refreshEmployeeData = useCallback(() => {
+    setEmployeesPages({});
+    setFetchKey(prev => prev + 1);
+  }, []);
+  
+  useEffect(() => {
+    if (employeePages[currentPage]) {
+      return;
+    }
+
+    handleSearch();
+  }, [currentPage, fetchKey]);
 
   const onSave = async (newEmployee) => {
     setIsLoading(true);
@@ -59,11 +111,11 @@ function App() {
         throw new Error(jsonResponse.error);
       }
 
-      newEmployee = jsonResponse.data;
-
-      setEmployees((prevEmployees) => [...prevEmployees, newEmployee]);
+      refreshEmployeeData();
+      setCurrentPage(1);
       
       toast.success(jsonResponse.message);
+
       setAdding(false);  
     } catch (err) {
       console.log(err);
@@ -96,10 +148,15 @@ function App() {
         throw new Error(jsonResponse.error);
       }
 
-      setEmployees((prevEmployees) => {
-        return prevEmployees.map(employee => 
-          employee.id === updatedEmployee.id ? updatedEmployee: employee
-        );
+      // Update the employee in the cache. Loop through each page.
+      setEmployeesPages((prevPages) => {
+        const newPages = { ...prevPages };
+        Object.keys(newPages).forEach(page => {
+          newPages[page] = newPages[page].map(emp =>
+            emp.id === updatedEmployee.id ? updatedEmployee : emp
+          );
+        });
+        return newPages;
       });
 
       toast.success(jsonResponse.message);
@@ -141,9 +198,8 @@ function App() {
         throw new Error(jsonResponse.error);
       }
       
-      setEmployees((prevEmployees) =>
-        prevEmployees.filter(employee => employee.id !== id)
-      );
+      refreshEmployeeData();
+      setCurrentPage(1);
 
       return jsonResponse;
     } catch (err) {
@@ -154,10 +210,6 @@ function App() {
     }
   };
 
-  const filteredEmployees = employees.filter(employee => {
-    if (!value) return true;
-    return JSON.stringify(employee).toLowerCase().includes(value.toLowerCase());
-  });
 
   return (
     <>      
@@ -180,8 +232,7 @@ function App() {
 
         {isAdding ? (
           <EmployeeForm 
-            employees={employees} 
-            setEmployees={setEmployees} 
+            employees={employees}
             onSave={onSave} 
             onCancel={onCancel}
             isLoading={isLoading}
@@ -196,19 +247,28 @@ function App() {
           </button>
         )}
         
-        <SearchBar value={value} setValue={setValue} />
+        <SearchBar 
+          value={searchTerm} 
+          setValue={setSearchTerm} 
+          setCurrentPage={setCurrentPage}
+          onSearch={refreshEmployeeData}
+        />
         
         {isLoading? (
           <span className="loading">Loading employees...</span>
         ) : (
           <EmployeeList
-            employees={filteredEmployees}
+            employees={employees}
             onUpdate={onUpdate}
             onDelete={onDelete}
             isLoading={isLoading}
           />
         )}
       </main>
+
+      <footer>
+        <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} pagesArray={pagesArray} totalPages={totalPages}></Pagination>  
+      </footer>
     </>
   );
 }

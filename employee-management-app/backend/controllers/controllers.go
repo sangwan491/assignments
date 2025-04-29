@@ -4,15 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"math"
 	"net/http"
-	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"github.com/sangwan491/backend-assignments/employee-management/backend/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -23,27 +22,13 @@ var collection *mongo.Collection
 var validate *validator.Validate
 
 func init() {
-	// Initialize validator
 	validate = validator.New()
 }
 
-// ConnectToMongoDB establishes a connection to MongoDB
-// Returns an error if connection fails
 func ConnectToMongoDB() error {
-	// Load .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Warning: Error loading .env file:", err)
-	}
-
-	// Get MongoDB connection details from environment variables
-	connectionString := os.Getenv("MONGODB_URI")
-	dbName := os.Getenv("MONGODB_DB_NAME")
-	colName := os.Getenv("MONGODB_COLLECTION_NAME")
-
-	if connectionString == "" || dbName == "" || colName == "" {
-		return fmt.Errorf("missing required MongoDB environment variables")
-	}
+	connectionString := "mongodb://mongodb:27017"
+	dbName := "employee_db"
+	colName := "employees"
 
 	clientOptions := options.Client().ApplyURI(connectionString)
 	client, err := mongo.Connect(clientOptions)
@@ -51,8 +36,7 @@ func ConnectToMongoDB() error {
 		return fmt.Errorf("MongoDB connection error: %w", err)
 	}
 
-	// Check the connection
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	err = client.Ping(ctx, nil)
@@ -62,14 +46,29 @@ func ConnectToMongoDB() error {
 
 	collection = client.Database(dbName).Collection(colName)
 	fmt.Println("MongoDB Connection success!")
+
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{"name", "text"},
+			{"phone", "text"},
+			{"email", "text"},
+		},
+	}
+
+	_, err = collection.Indexes().CreateOne(context.Background(), indexModel)
+
+	if err != nil {
+		return fmt.Errorf("Failed to create index: %w", err)
+	}
+
+	fmt.Println("Index created successfully!")
+
 	return nil
 }
 
-// formatValidationErrors converts validator errors into a user-friendly string.
 func formatValidationErrors(errs validator.ValidationErrors) string {
 	var errMsgs []string
 	for _, err := range errs {
-		// Provide more user-friendly messages based on the validation tag
 		field := err.Field()
 		tag := err.Tag()
 		param := err.Param()
@@ -92,7 +91,6 @@ func formatValidationErrors(errs validator.ValidationErrors) string {
 			msg = fmt.Sprintf("Field '%s' must be less than or equal to %s", field, param)
 		case "email":
 			msg = fmt.Sprintf("Field '%s' must be a valid email address", field)
-		// Add more cases for other common validation tags as needed
 		default:
 			msg = fmt.Sprintf("Field '%s' failed validation on the '%s' tag", field, tag)
 		}
@@ -101,15 +99,89 @@ func formatValidationErrors(errs validator.ValidationErrors) string {
 	return strings.Join(errMsgs, ", ")
 }
 
-// GetAllEmployees - HTTP handler to get all employees
-func GetAllEmployees(w http.ResponseWriter, r *http.Request) {
-	employees, err := getAllEmployees()
+// SearchEmployees - HTTP handler to search for employees with pagination
+func SearchEmployees(w http.ResponseWriter, r *http.Request) {
+	searchTerm := strings.TrimSpace(r.URL.Query().Get("term"))
+	// searchType := r.URL.Query().Get("type")
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1 // Default to page 1 if invalid or missing
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 20 // Default limit
+	}
+	if limit > 100 {
+		limit = 100 // Max limit
+	}
+
+	skip := int64((page - 1) * limit)
+
+	pipeline := mongo.Pipeline{}
+
+	if searchTerm != "" {
+		matchStage := bson.D{{"$match", bson.M{"$text": bson.M{"$search": searchTerm}}}}
+
+		pipeline = append(pipeline, matchStage)
+	}
+
+	facetStage := bson.D{{"$facet", bson.D{
+		{"data", bson.A{
+			bson.D{{"$skip", skip}},
+			bson.D{{"$limit", limit}},
+		}},
+		{"totalCount", bson.A{
+			bson.D{{"$count", "count"}},
+		}},
+	}}}
+
+	pipeline = append(pipeline, facetStage)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	cur, err := collection.Aggregate(ctx, pipeline)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": fmt.Sprintf("Failed to retrieve employees: %v", err)})
+		json.NewEncoder(w).Encode(map[string]string{"error": fmt.Sprintf("Search query failed: %v", err)})
 		return
 	}
-	json.NewEncoder(w).Encode(employees)
+	defer cur.Close(ctx)
+
+	var facetResults []struct {
+		Data       []models.Employee `bson:"data"`
+		TotalCount []struct {
+			Count int64 `bson:"count"`
+		} `bson:"totalCount"`
+	}
+
+	if err = cur.All(ctx, &facetResults); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": fmt.Sprintf("Failed to decode results: %v", err)})
+		return
+	}
+
+	employees := []models.Employee{}
+	if facetResults[0].Data != nil {
+		employees = facetResults[0].Data
+	}
+
+	var totalCount int64 = 0
+	if len(facetResults[0].TotalCount) > 0 {
+		totalCount = facetResults[0].TotalCount[0].Count
+	}
+
+	totalPages := int(math.Ceil(float64(totalCount) / float64(limit)))
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"employees": employees,
+		"pages":     totalPages,
+	})
 }
 
 // CreateEmployee - HTTP handler to create a new employee
@@ -243,27 +315,4 @@ func deleteOneEmployee(employeeID string) error {
 	}
 	fmt.Printf("Successfully deleted employee with ID: %s\n", employeeID)
 	return nil
-}
-
-// getAllEmployees retrieves all employee documents from the database.
-func getAllEmployees() ([]models.Employee, error) {
-	cur, err := collection.Find(context.Background(), bson.M{})
-	if err != nil {
-		return nil, fmt.Errorf("error finding employees: %w", err)
-	}
-
-	employees := []models.Employee{}
-	for cur.Next(context.Background()) {
-		var employee models.Employee
-		if err := cur.Decode(&employee); err != nil {
-			return nil, fmt.Errorf("error decoding employee: %w", err)
-		}
-		employees = append(employees, employee)
-	}
-
-	if err := cur.Err(); err != nil {
-		return nil, fmt.Errorf("cursor error: %w", err)
-	}
-
-	return employees, nil
 }

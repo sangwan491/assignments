@@ -16,7 +16,7 @@ func SetupRouter() http.Handler {
 	api := router.PathPrefix("/api").Subrouter()
 
 	// Employee routes
-	api.HandleFunc("/employees", controllers.GetAllEmployees).Methods("GET")
+	api.HandleFunc("/employees/search", controllers.SearchEmployees).Methods("GET")
 	api.HandleFunc("/employees", controllers.CreateEmployee).Methods("POST")
 	api.HandleFunc("/employees/{id}", controllers.UpdateEmployee).Methods("PUT")
 	api.HandleFunc("/employees/{id}", controllers.DeleteEmployee).Methods("DELETE")

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
+const EmployeeItem = ({ employee, onUpdate, onDelete, onEmployeeClick }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEmployee, setEditedEmployee] = useState({ ...employee });
   const [isDeleting, setIsDeleting] = useState(false);
@@ -28,15 +28,15 @@ const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
   }, [employee]);
 
   return (
-    <section className="employee-item">
+    <section className="employee-item" id={`employee-${employee.id}`}>
       <div className="employee-header">
         <input
+          className="employee-name"
           type="text"
           name="name"
           value={editedEmployee.name}
           onChange={handleChange}
           disabled={!isEditing}
-      
         />
         <section className="employee-actions">
           {isEditing ? (
@@ -95,7 +95,7 @@ const EmployeeItem = ({ employee, onUpdate, onDelete }) => {
           />
         </section>
         <section className="detail-item">
-          <i className="fa-solid fa-user"></i>
+          <i className="fa-solid fa-building"></i>
           <span className="label">Department:</span>
           <input 
             type="text"

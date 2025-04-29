@@ -10,4 +10,5 @@ type Employee struct {
 	Email      string        `json:"email,omitempty" bson:"email,omitempty" validate:"required,email"`
 	Phone      string        `json:"phone,omitempty" bson:"phone,omitempty" validate:"required"`
 	Department string        `json:"department,omitempty" bson:"department,omitempty" validate:"required"`
+	Manager    bson.ObjectID `json:"manager,omitempty" bson:"manager,omitempty"`
 }
