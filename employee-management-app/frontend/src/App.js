@@ -9,6 +9,7 @@ import './App.css';
 
 import { searchEmployees, createEmployee, updateEmployee, deleteEmployee } from './utils/api';
 import { calculatePagesArray } from './utils/pagination';
+import { validateEmployee } from './utils/validation';    
 
 function App() {
   const [isAdding, setAdding] = useState(false);
@@ -57,6 +58,12 @@ function App() {
   }, [currentPage, fetchKey]);
 
   const onSave = async (newEmployee) => {
+    const validationErrors = validateEmployee(newEmployee);
+    if (validationErrors.length > 0) {
+      validationErrors.forEach(error => toast.error(error));
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await createEmployee(newEmployee);
@@ -77,6 +84,12 @@ function App() {
   };
 
   const onUpdate = async (updatedEmployee) => {
+    const validationErrors = validateEmployee(updatedEmployee);
+    if (validationErrors.length > 0) {
+      validationErrors.forEach(error => toast.error(error));
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await updateEmployee(updatedEmployee);
