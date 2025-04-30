@@ -59,22 +59,6 @@ const EmployeeForm = ({ employees, onSave, onCancel }) => {
         />
       </section>
       
-      <section className="form-group">
-        <label>Manager:</label>
-        <select
-          name="manager"
-          value={formData.manager}
-          onChange={handleChange}
-        >
-          <option value="">No Manager</option>
-          {employees.map(employee => (
-            <option key={employee.id} value={employee.id}>
-              {employee.name}
-            </option>
-          ))}
-        </select>
-      </section>
-      
       <section className="form-actions">
         <button type="button" onClick={() => onSave(formData)}>Save</button>
         <button type="button" onClick={onCancel}>Cancel</button>
